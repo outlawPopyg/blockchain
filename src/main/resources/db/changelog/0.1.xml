@@ -1,0 +1,21 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="001_init" author="k.ahmetchin" dbms="postgresql">
+        <sql>
+			create table if not exists block
+			(
+				id             bigserial primary key,
+				data           varchar(512),
+				prev_hash      bytea,
+				data_signature bytea,
+				hash_signature bytea,
+				next_id        bigint,
+				constraint fk_next_id
+					foreign key (next_id) references block (id) on update restrict on delete restrict
+			);
+		</sql>
+    </changeSet>
+
+</databaseChangeLog>
