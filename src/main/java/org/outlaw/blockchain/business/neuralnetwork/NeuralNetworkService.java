@@ -1,21 +1,24 @@
-package org.outlaw.blockchain.neuralnetwork;
+package org.outlaw.blockchain.business.neuralnetwork;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.math3.util.Precision;
+import org.bouncycastle.util.encoders.Hex;
+import org.outlaw.blockchain.business.CryptoUtils;
 import org.outlaw.blockchain.model.Weights;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.DecimalFormat;
+import java.security.PublicKey;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class Main {
+@Service
+public class NeuralNetworkService {
 	@SneakyThrows
-	public static void main(String[] args) {
+	public String getWeights() {
 		double[][] inputs;
 		double[][] outputs;
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -51,19 +54,15 @@ public class Main {
 			error += ((ideal - predicted) * (ideal - predicted));
 		}
 
-		System.out.println(error);
-
 		Weights weights = Weights.fillFromConnections(ConnectionHolder.getConnections());
 		weights.setE(BigDecimal.valueOf(Precision.round(error, 12)).toString());
+		weights.setPublickey(Hex.toHexString(CryptoUtils.getPublicKey().getEncoded()));
 
-		String s = objectMapper.writeValueAsString(weights);
+		String result = objectMapper.writeValueAsString(weights);
 
 		int i = 0;
 
-
+		return result;
 	}
 
-	public static double output(double x) {
-		return 1 / (1 + Math.exp(-x));
-	}
 }

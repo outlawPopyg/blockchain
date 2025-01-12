@@ -1,4 +1,4 @@
-package org.outlaw.blockchain.neuralnetwork;
+package org.outlaw.blockchain.business.neuralnetwork;
 
 public class TanH implements IActivationFunction {
     @Override

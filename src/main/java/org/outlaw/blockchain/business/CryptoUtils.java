@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.crypto.digests.GOST3411_2012_256Digest;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.outlaw.blockchain.model.Block;
+import org.bouncycastle.util.encoders.Hex;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -12,7 +12,6 @@ import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Objects;
 
 public final class CryptoUtils {
 	public static final String KEY_ALGORITHM = "RSA";
@@ -53,22 +52,20 @@ public final class CryptoUtils {
 		return hashMessage;
 	}
 
-	public static byte[] getDigest(Block block) {
-		if (block == null) {
-			return null;
-		}
-		Objects.requireNonNull(block.getData(), "Нет данных в блоке");
-		Objects.requireNonNull(block.getDataSignature(), "Нет подписи данных");
-		return getDigest(addAll(block.getPrevHash(), block.getData().getBytes(StandardCharsets.UTF_8), block.getDataSignature()));
+	@SneakyThrows
+	public static String getSHA256(byte[] data) {
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+		byte[] hash = digest.digest(data);
+		return new String(Hex.encode(hash));
 	}
 
-	public static byte[] addAll(byte[] hash, byte[] data, byte[] dataSign) {
-		return ArrayUtils.addAll(ArrayUtils.addAll(hash, data), dataSign);
+	public static byte[] addAll(byte[] prevHash, byte[] data, byte[] signature, byte[] nonce) {
+		return ArrayUtils.addAll(ArrayUtils.addAll(ArrayUtils.addAll(prevHash, data), signature), nonce);
 	}
 
 	@SneakyThrows
 	public static byte[] generateSignature(PrivateKey privateKey, byte[] input) {
-		Signature signature = Signature.getInstance(SIGN_ALGORITHM, "BC");
+		Signature signature = Signature.getInstance(SIGN_ALGORITHM, BouncyCastleProvider.PROVIDER_NAME);
 
 		signature.initSign(privateKey);
 

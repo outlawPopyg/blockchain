@@ -1,4 +1,4 @@
-package org.outlaw.blockchain.neuralnetwork;
+package org.outlaw.blockchain.business.neuralnetwork;
 
 public class RandomGenerator {
     public static double randomValue(int min, int max) {
