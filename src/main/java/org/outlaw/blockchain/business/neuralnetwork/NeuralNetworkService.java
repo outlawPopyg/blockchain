@@ -18,7 +18,7 @@ import java.util.*;
 @Service
 public class NeuralNetworkService {
 	@SneakyThrows
-	public String getWeights() {
+	public Weights getWeights() {
 		double[][] inputs;
 		double[][] outputs;
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -56,13 +56,9 @@ public class NeuralNetworkService {
 
 		Weights weights = Weights.fillFromConnections(ConnectionHolder.getConnections());
 		weights.setE(BigDecimal.valueOf(Precision.round(error, 12)).toString());
-		weights.setPublickey(Hex.toHexString(CryptoUtils.getPublicKey().getEncoded()));
 
-		String result = objectMapper.writeValueAsString(weights);
 
-		int i = 0;
-
-		return result;
+		return weights;
 	}
 
 }

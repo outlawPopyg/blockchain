@@ -66,9 +66,7 @@ public final class CryptoUtils {
 	@SneakyThrows
 	public static byte[] generateSignature(PrivateKey privateKey, byte[] input) {
 		Signature signature = Signature.getInstance(SIGN_ALGORITHM, BouncyCastleProvider.PROVIDER_NAME);
-
 		signature.initSign(privateKey);
-
 		signature.update(input);
 
 		return signature.sign();

@@ -1,57 +1,66 @@
 package org.outlaw.blockchain;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
+import org.outlaw.blockchain.business.BlockChainService;
 import org.outlaw.blockchain.business.CryptoUtils;
 import org.outlaw.blockchain.business.neuralnetwork.NeuralNetworkService;
-import org.outlaw.blockchain.model.BlockchainResponse;
+import org.outlaw.blockchain.model.BlockDTO;
+import org.outlaw.blockchain.model.Weights;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.security.KeyPair;
+import java.util.Formatter;
 
 @SpringBootApplication
 @Slf4j
 public class BlockchainApplication {
 	@Bean
-	public CommandLineRunner commandLineRunner(NeuralNetworkService neuralNetworkService) {
-		return args -> {
-			ObjectMapper objectMapper = new ObjectMapper();
-			RestTemplate restTemplate = new RestTemplate();
-			ResponseEntity<List<BlockchainResponse>> forObject = restTemplate.exchange("http://itislabs.ru/nbc/chain?hash=0005e9c3274d5b5bafbddde40eb8fe646173e7ba4130a67fa33940c8d68b5aed",
-					HttpMethod.GET, null, new ParameterizedTypeReference<>() {
-					});
+	public CommandLineRunner commandLineRunner(NeuralNetworkService neuralNetworkService,
+	                                           BlockChainService blockChainService) {
 
-			BlockchainResponse target = forObject.getBody().get(0);
-			String prevhash = forObject.getBody().get(1).getPrevhash();
+		KeyPair keyPair = CryptoUtils.loadKeys();
 
-			byte[] bytes = CryptoUtils.addAll(Hex.decode(target.getPrevhash()),
-					target.getData().toString().getBytes(),
-					Hex.decode(target.getSignature()),
-					intToByteArray(target.getNonce()));
-			String sha256 = CryptoUtils.getSHA256(bytes);
+		CommandLineRunner sendBlock = args -> {
+			Weights weights = neuralNetworkService.getWeights();
+			weights.setPublickey(Hex.toHexString(keyPair.getPublic().getEncoded()));
+
+			String prevHash = blockChainService.getPrevHash();
+			String sign = new String(Hex.encode(CryptoUtils.generateSignature(keyPair.getPrivate(),
+					weights.toString().getBytes(StandardCharsets.UTF_8))));
+
+			BlockDTO block = new BlockDTO();
+			block.setPrevhash(prevHash);
+			block.setSignature(sign);
+			block.setNonce(0);
+			block.setData(weights);
+
+			blockChainService.computeNonce(block);
+
+			log.info("Nonce: {}", block.getNonce());
+
+			blockChainService.sendBlock(block);
+		};
+
+		CommandLineRunner sendAuthor = args -> {
+			String author = "Ахметшин Калим Рустемович, 11-102";
+
+			String sign = new String(Hex.encode(CryptoUtils.generateSignature(keyPair.getPrivate(),
+					author.getBytes(StandardCharsets.UTF_8))));
+
+			String authorInfo = new Formatter().format("{\"autor\":\"%s\",\"sign\":\"%s\",\"publickey\":\"%s\"}", author, sign,
+					Hex.toHexString(keyPair.getPublic().getEncoded())).toString();
+
+			String response = blockChainService.sendAuthor(authorInfo);
 			int i = 0;
 		};
-	}
 
-	public static byte[] intToByteArray(int x) {
-		byte[] r = new byte[4];
-		r[0] = (byte) (x >> 24);
-		r[1] = (byte) (x >> 16);
-		r[2] = (byte) (x >> 8);
-		r[3] = (byte) (x);
-		return r;
+
+		return sendAuthor;
 	}
 
 

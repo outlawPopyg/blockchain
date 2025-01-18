@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BlockchainResponse {
+public class BlockDTO {
 	private String prevhash;
 	private Weights data;
 	private String signature;
