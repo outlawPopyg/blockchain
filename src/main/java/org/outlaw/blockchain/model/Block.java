@@ -6,10 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Arrays;
-
 @Entity
-@Table(name = "block")
+@Table(name = "block_arbiter")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -30,6 +28,12 @@ public class Block {
 
 	@Column(name = "hash_signature")
 	private byte[] hashSignature; // хэш подписи
+
+	@Column(name = "timestamp")
+	private String timestamp;
+
+	@Column(name = "arbiter_signature")
+	private String arbiterSignature;
 
 	@ManyToOne
 	@JoinColumn(name = "next_id")

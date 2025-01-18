@@ -18,4 +18,22 @@
 		</sql>
     </changeSet>
 
+	<changeSet id="002_arbiter_block_v3" author="k.ahmetchin" dbms="postgresql">
+		<sql>
+			create table if not exists block_arbiter
+			(
+				id                bigserial primary key,
+				data              varchar(512),
+				prev_hash         bytea,
+				data_signature    bytea,
+				hash_signature    bytea,
+				next_id           bigint,
+				timestamp         varchar(128),
+				arbiter_signature varchar(512),
+				constraint fk_block_arbiter_next_id
+					foreign key (next_id) references block_arbiter (id) on update restrict on delete restrict
+			);
+		</sql>
+	</changeSet>
+
 </databaseChangeLog>

@@ -2,22 +2,12 @@ package org.outlaw.blockchain;
 
 import lombok.extern.slf4j.Slf4j;
 import org.outlaw.blockchain.business.BlockchainService;
-import org.outlaw.blockchain.business.CryptoUtils;
-import org.outlaw.blockchain.dao.BlockRepository;
-import org.outlaw.blockchain.model.Block;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.KeyPair;
-import java.util.Objects;
 import java.util.Scanner;
-
-import static org.outlaw.blockchain.business.CryptoUtils.verifySignature;
 
 @SpringBootApplication
 @Slf4j
